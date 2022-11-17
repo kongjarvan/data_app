@@ -1,47 +1,51 @@
+import 'dart:convert';
+
+import 'package:data_app/domain/http_connector.dart';
 import 'package:data_app/domain/product/product.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart';
+
+final productHttpRepository = Provider<ProductHttpRepository>((ref) {
+  return ProductHttpRepository(ref);
+});
 
 class ProductHttpRepository {
-  List<Product> list = [
-    Product(1, "바나나", 1000),
-    Product(2, "딸기", 2000),
-    Product(3, "참외", 3000),
-  ];
+  Ref _ref;
 
-  Product findById(int id) {
-    // http 통신코드
-    Product product = list.singleWhere((product) => product.id == id);
+  ProductHttpRepository(this._ref);
+
+  Future<Product> findById(int id) async {
+    Response response =
+        await _ref.read(httpConnector).get("/api/product/${id}");
+    Product product = Product.fromJson(jsonDecode(response.body));
     return product;
   }
 
-  List<Product> findAll() {
-    // http 통신코드
-    return list;
+  Future<List<Product>> findAll() async {
+    Response response = await _ref.read(httpConnector).get("/api/product");
+    List<dynamic> dataList = jsonDecode(response.body)["data"];
+    return dataList.map((e) => Product.fromJson(e)).toList();
   }
 
-  Product insert(Product product) {
-    // http 통신코드
-    product.id = 4;
-    list = [...list, product];
+  Future<Product> insert(Product productReqDto) async {
+    String body = jsonEncode(productReqDto.toJson());
+    Response response =
+        await _ref.read(httpConnector).post("/api/product", body);
+    Product product = Product.fromJson(jsonDecode(response.body)["data"]);
     return product;
   }
 
-  Product updateById(int id, Product productDto) {
-    // http 통신코드
-    list = list.map((product) {
-      if (product.id == id) {
-        product = productDto;
-        return product;
-      } else {
-        return product;
-      }
-    }).toList();
-    productDto.id = id;
-    return productDto;
+  Future<Product> updateById(int id, Product productReqDto) async {
+    String body = jsonEncode(productReqDto.toJson());
+    Response response =
+        await _ref.read(httpConnector).put("/api/product/${id}", body);
+    Product product = Product.fromJson(jsonDecode(response.body)["data"]);
+    return product;
   }
 
-  int deleteById(int id) {
-    // http 통신코드
-    list.where((product) => product.id != id).toList();
-    return 1;
+  Future<int> deleteById(int id) async {
+    Response response =
+        await _ref.read(httpConnector).delete("/api/product/${id}");
+    return jsonDecode(response.body)["code"];
   }
 }

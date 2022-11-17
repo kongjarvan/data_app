@@ -1,4 +1,4 @@
-import 'package:data_app/views/product/list/product_list_page.dart';
+import 'package:data_app/views/product/list/product_list_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -10,6 +10,8 @@ void main() {
   );
 }
 
+final navigatorKey = GlobalKey<NavigatorState>();
+
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
@@ -17,7 +19,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: ProductListPage(),
+      navigatorKey: navigatorKey,
+      home: ProductListView(),
     );
   }
 }
